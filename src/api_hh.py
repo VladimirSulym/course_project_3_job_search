@@ -12,7 +12,6 @@ logger.setLevel(LOG_LEVEL)
 class ApiHH:
     """
     Класс для работы с API HeadHunter
-    Класс Parser является родительским классом, который вам необходимо реализовать
     """
 
     def __init__(self):

@@ -2,6 +2,9 @@ import psycopg2
 
 
 class DBManager:
+    """
+    Класс для подключения и работы с базой данных SQl вакансий HH
+    """
 
     def __init__(self, name_db='hh_db'):
         self.__conn_params = {
@@ -11,28 +14,38 @@ class DBManager:
             'password': "qwerty123",
         }
         self.name_db = name_db
-        self.__creating_database(self.name_db)
+        self.__creating_database()
         self.__init_table()
 
-    def __creating_database(self, name_db):
+    def __creating_database(self):
+        """
+        Функция создает базу данных на сервере SQL
+        """
         try:
             conn = psycopg2.connect(**self.__conn_params)
             cursor = conn.cursor()
-            conn.autocommit = True
-            cursor.execute(f"CREATE DATABASE {name_db}")
-            print("База данных успешно создана")
+            conn.autocommit = True # Благодаря этому команда SQL, Во-первых, выполняется немедленно.
+            # А во-вторых, выполняется вне транзакции
+            # (выражение "CREATE DATABASE" должно выполняться именно вне транзакции)
+            cursor.execute(f"CREATE DATABASE {self.name_db}")
+            print(f"База данных {self.name_db} успешно создана")
             cursor.close()
             conn.close()
         except Exception as e:
             print(e)
 
     def __init_table(self):
+        """
+        Функция создает основные таблицы в базе данных которую создал данный класс
+        """
         self.__conn_params['database'] = self.name_db
         with psycopg2.connect(**self.__conn_params) as conn:
             # conn.autocommit = True
             with conn.cursor() as cursor:
+                # проверяем, существует ли такая таблица
                 cursor.execute("select * from information_schema.tables where table_name=%s", ('employers',))
-                # print(cursor.fetchall())
+                # теперь cursor содержит список с данными о запрошенной таблице
+                # cursor.fetchall() - подробный список данных
                 if not bool(cursor.rowcount):
                     cursor.execute("CREATE TABLE employers"
                                    "("
@@ -63,6 +76,7 @@ class DBManager:
                 else:
                     print("Таблица vacancies существует")
         conn.close()
+
 
 if __name__ == '__main__':
     DBManager()
