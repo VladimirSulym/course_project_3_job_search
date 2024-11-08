@@ -16,6 +16,8 @@ class DBManager:
         self.name_db = name_db
         self.__creating_database()
         self.__init_table()
+        self.__count_vacancies = 0
+        self.__count_employers = 0
 
     def __creating_database(self):
         """
@@ -24,7 +26,7 @@ class DBManager:
         try:
             conn = psycopg2.connect(**self.__conn_params)
             cursor = conn.cursor()
-            conn.autocommit = True # Благодаря этому команда SQL, Во-первых, выполняется немедленно.
+            conn.autocommit = True  # Благодаря этому команда SQL, Во-первых, выполняется немедленно.
             # А во-вторых, выполняется вне транзакции
             # (выражение "CREATE DATABASE" должно выполняться именно вне транзакции)
             cursor.execute(f"CREATE DATABASE {self.name_db}")
@@ -51,11 +53,16 @@ class DBManager:
                                    "("
                                    "id int PRIMARY KEY,"
                                    "name varchar(250) NOT NULL,"
-                                   "url varchar(500)"
+                                   "url varchar(500),"
+                                   "vacancies_url varchar(500)"
                                    ")"
                                    "")
                 else:
+                    cursor.execute("SELECT COUNT(*) FROM employers")
+                    self.__count_employers = cursor.fetchone()[0]
+                    print(self.__count_employers)
                     print("Таблица employers существует")
+
 
                 cursor.execute("select * from information_schema.tables where table_name=%s", ('vacancies',))
                 # print(cursor.fetchall())
@@ -64,19 +71,56 @@ class DBManager:
                                    "("
                                    "id int PRIMARY KEY,"
                                    "name varchar(250) NOT NULL,"
+                                   "employer_id int NOT NULL REFERENCES employers(id),"
                                    "area varchar(100),"
                                    "salary_from int,"
                                    "salary_to int,"
                                    "currency varchar(5),"
                                    "url varchar(500),"
-                                   "employer_id int NOT NULL REFERENCES employers(id)"
+                                   "requirement text,"
+                                   "responsibility text,"
+                                   "schedule varchar(250)"
                                    ")"
                                    "")
                     conn.commit()
                 else:
+                    cursor.execute("SELECT COUNT(*) FROM vacancies")
+                    self.__count_vacancies = cursor.fetchone()[0]
+                    print(self.__count_vacancies)
                     print("Таблица vacancies существует")
         conn.close()
 
+    @property
+    def vacancies(self):
+        return None
+
+    @vacancies.setter
+    def vacancies(self, vacancies: list):
+        print('запущен сетер')
+        self.__conn_params['database'] = self.name_db
+        with psycopg2.connect(**self.__conn_params) as conn:
+            with conn.cursor() as cursor:
+                for vacancy in vacancies:
+                    try:
+                        cursor.execute("INSERT INTO employers VALUES (%s, %s, %s, %s)",
+                                       (list(vacancy.employer.employer.values())))
+                    except Exception as e:
+                        print(e)
+                    conn.commit()
+                    try:
+                        cursor.execute("INSERT INTO vacancies VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                                       (list(vacancy.vacancy.values())))
+                    except Exception as e:
+                        print(e)
+                    conn.commit()
+        conn.close()
+
+
+# get_companies_and_vacancies_count() — получает список всех компаний и количество вакансий у каждой компании.
+# get_all_vacancies() — получает список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на вакансию.
+# get_avg_salary() — получает среднюю зарплату по вакансиям.
+# get_vacancies_with_higher_salary() — получает список всех вакансий, у которых зарплата выше средней по всем вакансиям.
+# get_vacancies_with_keyword() — получает список всех вакансий, в названии которых содержатся переданные в метод слова, например python.
 
 if __name__ == '__main__':
     DBManager()

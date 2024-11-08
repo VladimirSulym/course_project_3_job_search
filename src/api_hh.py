@@ -29,7 +29,7 @@ class ApiHH:
 
     def load_vacancies(self, keyword: str) -> list:
         """Функция получает на вход слово для поиска на сайте hh и список словарей с вакансиями"""
-        self.__params["text"] = keyword
+        self.__params["text"] = str(keyword)
         pages_count = 20
         while self.__params.get("page") < pages_count:
             response = self.__api_connection()

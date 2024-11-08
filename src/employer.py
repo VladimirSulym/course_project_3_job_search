@@ -1,10 +1,10 @@
 class Employer:
     def __init__(self, data):
         self.employer = {
-            "id": data.get("id"),
-            "name": data.get("name"),
-            "url": data.get("alternate_url"),
-            "vacancies_url": data.get("vacancies_url"),
+            "id": data.get("employer").get("id"),
+            "name": data.get("employer").get("name"),
+            "url": data.get("employer").get("alternate_url"),
+            "vacancies_url": data.get("employer").get("vacancies_url"),
         }
 
     def __str__(self):
