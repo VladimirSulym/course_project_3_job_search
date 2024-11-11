@@ -1,5 +1,6 @@
-import requests
 import logging
+
+import requests
 
 from config import LOG_FORMAT, LOG_LEVEL
 
@@ -8,6 +9,7 @@ console_handler = logging.StreamHandler()
 console_handler.setFormatter(LOG_FORMAT)
 logger.addHandler(console_handler)
 logger.setLevel(LOG_LEVEL)
+
 
 class ApiHH:
     """

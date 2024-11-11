@@ -1,4 +1,6 @@
 class Employer:
+    """Класс для хранения данных о работодателе"""
+
     def __init__(self, data):
         self.employer = {
             "id": data.get("employer").get("id"),
@@ -14,3 +16,7 @@ class Employer:
             f"Ссылка: {self.employer.get('url')}\n"
             f"Ссылка на вакансии: {self.employer.get('vacancies_url')}"
         )
+
+    @property
+    def get_employer(self):
+        return self.employer.get("name")
